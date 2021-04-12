@@ -9,7 +9,7 @@ from api.routes import create_route
 config = {
     'JSON_SORT_KEYS': False,
     'MONGODB_SETTINGS': {
-        'host': 'mongodb://localhost/movie-bag'
+        'host': 'mongodb://localhost/schools'
     },
     'JWT_SECRET_KEY': '&F)J@NcRfUjXn2r5u7x!A%D*G-KaPdSg',
     'JWT_ACCESS_TOKEN_EXPIRES': 300,

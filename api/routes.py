@@ -1,13 +1,20 @@
+from api.user import UserApi, UsersApi
 from flask_restful import Api
 
 from api.authentication import SignUpApi, TokenApi, RefreshTokenApi
-from api.movie import MoviesApi, MovieApi
+from api.subject import SubjectApi, SubjectsApi
 
 
 def create_route(api: Api):
-    api.add_resource(MoviesApi, '/movies')
-    api.add_resource(MovieApi, '/movies/<movie_id>')
-
+    # OAuth
     api.add_resource(SignUpApi, '/authentication/signup')
     api.add_resource(TokenApi, '/authentication/token')
     api.add_resource(RefreshTokenApi, '/authentication/token/refresh')
+
+    # Users
+    api.add_resource(UsersApi, '/users')
+    api.add_resource(UserApi, '/users/<user_id>')
+
+    # Subjects
+    api.add_resource(SubjectsApi, '/subjects')
+    api.add_resource(SubjectApi, '/subjects/<subject_id>')

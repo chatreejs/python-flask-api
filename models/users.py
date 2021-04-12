@@ -6,6 +6,8 @@ from mongoengine import Document, StringField, EmailField
 class Users(Document):
     username = StringField(required=True, unique=True)
     password = StringField(required=True, min_length=6, regex=None)
+    firstName = StringField(required=True)
+    lastName = StringField(required=True)
     email = EmailField(required=True, unique=True)
 
     def generate_pw_hash(self):

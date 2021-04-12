@@ -5,15 +5,15 @@ from flask_jwt_extended import jwt_required
 from mongoengine import NotUniqueError, DoesNotExist
 from kanpai import Kanpai
 
-from models.movies import Movies
+from models.subjects import Subjects
 
 
-class MoviesApi(Resource):
+class SubjectsApi(Resource):
     @jwt_required()
     def get(self) -> Response:
-        movies = Movies.objects()
-        if len(movies) > 0:
-            response = jsonify(movies)
+        subjects = Subjects.objects()
+        if len(subjects) > 0:
+            response = jsonify(subjects)
             response.status_code = 200
             return response
         else:
@@ -21,11 +21,12 @@ class MoviesApi(Resource):
             response.status_code = 204
             return response
 
+    @jwt_required()
     def post(self) -> Response:
         schema = Kanpai.Object({
+            'code': Kanpai.String().required(),
             'name': Kanpai.String().required(),
-            'casts': Kanpai.Array().required(),
-            'genres': Kanpai.Array().required()
+            'instructor': Kanpai.String().required(),
         })
 
         validate_result = schema.validate(request.get_json())
@@ -34,23 +35,26 @@ class MoviesApi(Resource):
 
         body = request.get_json()
         try:
-            Movies(**body).save()
+            Subjects(**body).save()
             return Response(status=201)
         except NotUniqueError:
-            return Response("Name is already exist", status=400)
+            return Response("Subject code is already exist", status=400)
 
-class MovieApi(Resource):
-    def get(self, movie_id: str = None) -> Response:
+
+class SubjectApi(Resource):
+    @jwt_required()
+    def get(self, subject_id: str = None) -> Response:
         try:
-            movie = Movies.objects.get(id=movie_id).to_json()
-            return Response(movie, mimetype="application/json", status=200)
+            subject = Subjects.objects.get(id=subject_id).to_json()
+            return Response(subject, mimetype="application/json", status=200)
         except DoesNotExist:
             return Response(status=404)
 
-    def patch(self, movie_id: str) -> Response:
+    @jwt_required()
+    def patch(self, subject_id: str) -> Response:
         schema = Kanpai.Object({
-            'casts': Kanpai.Array(),
-            'genres': Kanpai.Array()
+            'name': Kanpai.String(),
+            'instructor': Kanpai.String()
         })
 
         validate_result = schema.validate(request.get_json())
@@ -59,14 +63,15 @@ class MovieApi(Resource):
 
         body = request.get_json()
         try:
-            Movies.objects.get(id=movie_id).update(**body)
+            Subjects.objects.get(id=subject_id).update(**body)
             return Response(status=200)
         except DoesNotExist:
             return Response(status=404)
 
-    def delete(self, movie_id: str) -> Response:
+    @jwt_required()
+    def delete(self, subject_id: str) -> Response:
         try:
-            Movies.objects.get(id=movie_id).delete()
+            Subjects.objects.get(id=subject_id).delete()
             return Response(status=200)
         except DoesNotExist:
             return Response(status=404)
