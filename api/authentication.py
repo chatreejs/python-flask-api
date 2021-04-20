@@ -8,6 +8,8 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 
+import uuid
+
 from mongoengine import DoesNotExist
 
 from models.oauth.error import OAuthErrorResponse
@@ -17,8 +19,9 @@ from models.users import Users
 
 class SignUpApi(Resource):
     def post(self) -> Response:
+        user_id = uuid.uuid4().hex
         body = request.get_json()
-        user = Users(**body)
+        user = Users(user_id=user_id, **body, subjects=[])
         user.save()
         response = Response()
         response.status_code = 201

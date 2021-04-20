@@ -1,14 +1,16 @@
 from flask_bcrypt import generate_password_hash, check_password_hash
 
-from mongoengine import Document, StringField, EmailField
+from mongoengine import Document, StringField, EmailField, ReferenceField, ListField
 
 
 class Users(Document):
+    user_id = StringField(required=True, primary_key=True)
     username = StringField(required=True, unique=True)
     password = StringField(required=True, min_length=6, regex=None)
     firstName = StringField(required=True)
     lastName = StringField(required=True)
     email = EmailField(required=True, unique=True)
+    subjects = ListField(ReferenceField('Subjects'))
 
     def generate_pw_hash(self):
         self.password = generate_password_hash(

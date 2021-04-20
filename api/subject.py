@@ -2,6 +2,8 @@ from flask import request, Response, jsonify
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required
 
+import uuid
+
 from mongoengine import NotUniqueError, DoesNotExist
 from kanpai import Kanpai
 
@@ -33,9 +35,10 @@ class SubjectsApi(Resource):
         if validate_result.get('success', False) is False:
             return Response(status=400)
 
+        subject_id = uuid.uuid4().hex
         body = request.get_json()
         try:
-            Subjects(**body).save()
+            Subjects(subject_id=subject_id, **body).save()
             return Response(status=201)
         except NotUniqueError:
             return Response("Subject code is already exist", status=400)
@@ -45,7 +48,7 @@ class SubjectApi(Resource):
     @jwt_required()
     def get(self, subject_id: str = None) -> Response:
         try:
-            subject = Subjects.objects.get(id=subject_id).to_json()
+            subject = Subjects.objects.get(subject_id=subject_id).to_json()
             return Response(subject, mimetype="application/json", status=200)
         except DoesNotExist:
             return Response(status=404)
@@ -63,7 +66,7 @@ class SubjectApi(Resource):
 
         body = request.get_json()
         try:
-            Subjects.objects.get(id=subject_id).update(**body)
+            Subjects.objects.get(subject_id=subject_id).update(**body)
             return Response(status=200)
         except DoesNotExist:
             return Response(status=404)
@@ -71,7 +74,7 @@ class SubjectApi(Resource):
     @jwt_required()
     def delete(self, subject_id: str) -> Response:
         try:
-            Subjects.objects.get(id=subject_id).delete()
+            Subjects.objects.get(subject_id=subject_id).delete()
             return Response(status=200)
         except DoesNotExist:
             return Response(status=404)

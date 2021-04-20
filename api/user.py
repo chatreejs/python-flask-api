@@ -1,4 +1,4 @@
-from flask import request, Response, jsonify
+from flask import json, request, Response, jsonify
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required
 
@@ -6,14 +6,14 @@ from mongoengine import NotUniqueError, DoesNotExist
 from kanpai import Kanpai
 
 from models.users import Users
+from models.subjects import Subjects
 
 
 class UsersApi(Resource):
-    @jwt_required()
+    # @jwt_required()
     def get(self) -> Response:
         users = Users.objects().exclude('password')
         if len(users) > 0:
-            del users[0].password
             response = jsonify(users)
             response.status_code = 200
             return response
@@ -24,22 +24,24 @@ class UsersApi(Resource):
 
 
 class UserApi(Resource):
-    @jwt_required()
+    # @jwt_required()
     def get(self, user_id: str = None) -> Response:
         try:
             user = Users.objects.exclude(
-                'password').get(id=user_id).to_json()
+                'password').get(user_id=user_id).to_json()
+
             return Response(user, mimetype="application/json", status=200)
         except DoesNotExist:
             return Response(status=404)
 
-    @jwt_required()
+    # @jwt_required()
     def patch(self, user_id: str) -> Response:
         schema = Kanpai.Object({
             'username': Kanpai.String(),
             'firstName': Kanpai.String(),
             'lastName': Kanpai.String(),
-            'email': Kanpai.String()
+            'email': Kanpai.String(),
+            'subjects_id': Kanpai.Array()
         })
 
         validate_result = schema.validate(request.get_json())
@@ -48,15 +50,26 @@ class UserApi(Resource):
 
         body = request.get_json()
         try:
-            Users.objects.get(id=user_id).update(**body)
+            if len(body.get("subjects_id")) > 0:
+                subjects_id = body.get("subjects_id")
+                subject_list = []
+
+                for i in subjects_id:
+                    subject_list.append(Subjects.objects.get(subject_id=i))
+
+            del body['subjects_id']
+
+            Users.objects.get(user_id=user_id).update(
+                **body, subjects=subject_list)
+
             return Response(status=200)
         except DoesNotExist:
             return Response(status=404)
 
-    @jwt_required()
+    # @jwt_required()
     def delete(self, user_id: str) -> Response:
         try:
-            Users.objects.get(id=user_id).delete()
+            Users.objects.get(user_id=user_id).delete()
             return Response(status=200)
         except DoesNotExist:
             return Response(status=404)
