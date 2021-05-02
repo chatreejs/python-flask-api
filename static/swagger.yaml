@@ -6,6 +6,38 @@ info:
 servers:
   - url: http://localhost:5000
 paths:
+  /authentication/token:
+    post:
+      tags:
+        - Authentication
+      summary: Authentication
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
   /users:
     get:
       tags:
@@ -24,31 +56,23 @@ paths:
                   $ref: "#/components/schemas/User"
         '204':
           description: Users not found
-        '400':
-          description: Invalid parameters
+        '401':
+          description: Unauthorize
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  msg:
                     type: string
-                    example: bad request
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: internal server error
+                    example: Token has expired
   /users/{id}:
     get:
       tags:
         - User
       summary: Find user by ID
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -63,6 +87,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        '401':
+          description: Unauthorize
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Token has expired
         '404':
           description: User not found
           content:
@@ -73,18 +107,35 @@ paths:
                   message:
                     type: string
                     example: not found
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: internal server error
+
+      
+      
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+    Token:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+        expires_in:
+          type: integer
+          format: int64
+        refresh_token:
+          type: string
+    OAuthError:
+      type: object
+      properties:
+        error:
+          type: string
+        error_description:
+          type: string
     User:
       type: object
       required:
@@ -103,4 +154,6 @@ components:
         lastName:
           type: string
         subjects:
-          type: string
+          type: array
+          items:
+            type: string

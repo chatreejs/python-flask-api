@@ -10,7 +10,7 @@ from models.subjects import Subjects
 
 
 class UsersApi(Resource):
-    # @jwt_required()
+    @jwt_required()
     def get(self) -> Response:
         users = Users.objects().exclude('password')
         if len(users) > 0:
@@ -24,7 +24,7 @@ class UsersApi(Resource):
 
 
 class UserApi(Resource):
-    # @jwt_required()
+    @jwt_required()
     def get(self, user_id: str = None) -> Response:
         try:
             user = Users.objects.exclude(
@@ -34,7 +34,7 @@ class UserApi(Resource):
         except DoesNotExist:
             return Response(status=404)
 
-    # @jwt_required()
+    @jwt_required()
     def patch(self, user_id: str) -> Response:
         schema = Kanpai.Object({
             'username': Kanpai.String(),
@@ -66,7 +66,7 @@ class UserApi(Resource):
         except DoesNotExist:
             return Response(status=404)
 
-    # @jwt_required()
+    @jwt_required()
     def delete(self, user_id: str) -> Response:
         try:
             Users.objects.get(user_id=user_id).delete()
