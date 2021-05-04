@@ -1,5 +1,5 @@
 from api.user import UserApi, UsersApi
-from flask_restful import Api
+from flask_restx import Api
 
 from api.authentication import SignUpApi, TokenApi, RefreshTokenApi
 from api.subject import SubjectApi, SubjectsApi
